@@ -2,11 +2,19 @@ import streamlit as st
 import pandas as pd
 import pydeck as pdk
 import joblib
-import numpy as np
 import os
 import random
 import time
 from datetime import datetime
+
+# ----------------------------
+# Page Config
+# ----------------------------
+
+st.set_page_config(
+    page_title="ATM Monitoring Dashboard",
+    layout="wide"
+)
 
 # ----------------------------
 # Load Model
@@ -16,14 +24,23 @@ BASE_DIR = os.path.dirname(__file__)
 MODEL_PATH = os.path.join(BASE_DIR, "backend/model/failure_model.pkl")
 model = joblib.load(MODEL_PATH)
 
-st.set_page_config(page_title="ATM Monitoring Dashboard", layout="wide")
+# ----------------------------
+# Title
+# ----------------------------
 
-st.title("🏦 Chennai ATM Operational Monitoring Dashboard")
+st.markdown(
+    """
+    <h1 style='font-size:42px;'>
+        🏦 Chennai ATM Operational Monitoring Dashboard
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
 
 placeholder = st.empty()
 
 # ----------------------------
-# Chennai ATM Locations
+# ATM Locations
 # ----------------------------
 
 ATM_LOCATIONS = {
@@ -34,7 +51,7 @@ ATM_LOCATIONS = {
 }
 
 # ----------------------------
-# ATM Data Simulator
+# Data Simulator
 # ----------------------------
 
 def generate_atm_data():
@@ -65,7 +82,7 @@ def generate_atm_data():
     }
 
 # ----------------------------
-# Live Loop
+# Live Refresh Loop
 # ----------------------------
 
 while True:
@@ -77,10 +94,9 @@ while True:
 
         features = generate_atm_data()
         df_features = pd.DataFrame([features])
-
         prob = model.predict_proba(df_features)[0][1]
 
-        # Controlled Prototype Behavior
+        # Controlled demo behavior
         if atm_id == "ATM-003":
             status = "🔴 CRITICAL"
             action = "Immediate technician dispatch"
@@ -116,19 +132,59 @@ while True:
 
     with placeholder.container():
 
+        # ---------------------------
+        # Premium Summary Cards
+        # ---------------------------
+
         col1, col2, col3 = st.columns(3)
 
-        col1.metric("🟢 GOOD", good_count)
-        col2.metric("🟡 WARNING", warning_count)
-        col3.metric("🔴 CRITICAL", critical_count)
+        col1.markdown(
+            f"""
+            <div style='background:#006600;padding:30px;border-radius:16px;
+                        color:white;text-align:center;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.4);'>
+                <h3>🟢 GOOD</h3>
+                <h1>{good_count}</h1>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        col2.markdown(
+            f"""
+            <div style='background:#cc7a00;padding:30px;border-radius:16px;
+                        color:white;text-align:center;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.4);'>
+                <h3>🟡 WARNING</h3>
+                <h1>{warning_count}</h1>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        col3.markdown(
+            f"""
+            <div style='background:#b30000;padding:30px;border-radius:16px;
+                        color:white;text-align:center;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.4);'>
+                <h3>🔴 CRITICAL</h3>
+                <h1>{critical_count}</h1>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         st.markdown("---")
 
-        # Map
+        # ---------------------------
+        # Map Section
+        # ---------------------------
+
+        st.subheader("📍 Chennai ATM Network Map")
+
         map_data = []
 
         for _, row in df.iterrows():
-
             atm_id = row["atm_id"]
             status = row["health_status"]
 
@@ -180,13 +236,35 @@ while True:
 
         st.markdown("---")
 
+        # ---------------------------
+        # Live ATM Cards
+        # ---------------------------
+
         st.subheader("Live ATM Status")
 
         for _, row in df.iterrows():
-            st.write(
-                f"**{row['atm_id']}** | {row['health_status']} | "
-                f"Probability: {row['failure_probability']} | "
-                f"Action: {row['recommended_action']}"
+
+            if "CRITICAL" in row["health_status"]:
+                color_box = "#b30000"
+            elif "WARNING" in row["health_status"]:
+                color_box = "#cc7a00"
+            else:
+                color_box = "#006600"
+
+            st.markdown(
+                f"""
+                <div style='padding:25px;border-radius:16px;
+                            background-color:{color_box};
+                            color:white;margin-bottom:20px;
+                            font-size:18px;
+                            box-shadow:0 4px 12px rgba(0,0,0,0.4);'>
+                    <b style="font-size:22px;">{row["atm_id"]}</b><br><br>
+                    Status: {row["health_status"]}<br>
+                    Probability: {row["failure_probability"]}<br>
+                    Action: {row["recommended_action"]}
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
     time.sleep(3)
