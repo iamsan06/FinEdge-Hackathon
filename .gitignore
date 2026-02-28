@@ -19,8 +19,6 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Model files (optional if large)
-*.pkl
 
 # Logs
 *.log

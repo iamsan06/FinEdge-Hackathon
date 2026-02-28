@@ -13,7 +13,7 @@ from datetime import datetime
 # ----------------------------
 
 BASE_DIR = os.path.dirname(__file__)
-MODEL_PATH = os.path.join(BASE_DIR, "model/failure_model.pkl")
+MODEL_PATH = os.path.join(BASE_DIR, "backend/model/failure_model.pkl")
 model = joblib.load(MODEL_PATH)
 
 st.set_page_config(page_title="ATM Monitoring Dashboard", layout="wide")
