@@ -1,4 +1,4 @@
-# 🏦 AI-Based ATM Health Monitoring & Failure Prediction System
+# 🏦 AI-Based ATM Health Monitoring & Failure Prediction System (Prototype)
 
 ## 🚀 Overview
 
